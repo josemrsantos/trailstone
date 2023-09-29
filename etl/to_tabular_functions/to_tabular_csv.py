@@ -1,4 +1,4 @@
-from extract import NotCorrectType
+from etl_exceptions import NotCorrectType
 import json
 import csv
 

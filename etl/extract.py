@@ -6,6 +6,7 @@ import pkgutil
 from inspect import getmembers, isfunction
 from etl_exceptions import NotCorrectType
 import logging
+from etl_base import ETL
 
 
 # Configure logging
@@ -18,7 +19,7 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
-class APIExtractor:
+class APIExtractor(ETL):
 
     def __init__(self, url=None, endpoint=None, key=None, name=None):
         self.url = url
@@ -95,19 +96,9 @@ class APIExtractor:
             new_header.append(column)
         self.header = new_header
 
-    def dump(self):
-        logger.info(f'--------------------------------------------------------------------')
-        logger.info(self.name)
-        logger.info(f'--------------------------------------------------------------------')
-        logger.info(f"HEADER={','.join(self.header)}")
-        logger.info('DATA:')
-        for row in self.data:
-            logger.info(f"{','.join([str(i) for i in row])}")
-
 
 def main():
     logger.info('This is a Python module and is not supposed to be called directly')
-    pass
 
 
 if __name__ == "__main__":

@@ -5,8 +5,6 @@ import requests
 from requests import Session
 from unittest.mock import patch
 
-class MockException(Exception):
-    pass
 
 def test_key_parsed_correctly_spaces_http():
     test_extractor = extract.APIExtractor(key=' 123 abc')
@@ -55,11 +53,6 @@ def test_get_data_json_ok(mock_session):
     assert result == expected
 
 
-def test_get_data_1_fail_retry_ok():
-    # TODO
-    pass
-
-
 @patch.object(Session, 'get', autospec=True)
 def test_get_data_all_fails_throw_exception(mock_session):
     mock_session.return_value.content = 'Some random output'.encode('utf-8')
@@ -72,8 +65,6 @@ def test_get_data_all_fails_throw_exception(mock_session):
         test_extractor.get_data()
 
 
-
-
 def test_clean_header_spaces_uppercase_ok():
     test_extractor = extract.APIExtractor()
     test_extractor.header = [' leading', 'tailing ', 'in between', ' Uppercase AND spaces ']
@@ -81,10 +72,3 @@ def test_clean_header_spaces_uppercase_ok():
     expected = ['leading', 'tailing', 'in_between', 'uppercase_and_spaces']
     assert test_extractor.header == expected
 
-
-def test_clean_header_spaces_uppercase_ok():
-    test_extractor = extract.APIExtractor()
-    test_extractor.header = [' leading', 'tailing ', 'in between', ' Uppercase AND spaces ']
-    test_extractor.clean_header()
-    expected = ['leading', 'tailing', 'in_between', 'uppercase_and_spaces']
-    assert test_extractor.header == expected

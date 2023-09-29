@@ -7,6 +7,7 @@ from inspect import getmembers, isfunction
 from etl_exceptions import NotCorrectType
 import logging
 
+
 # Configure logging
 logger = logging.getLogger('extract')
 logger.setLevel(logging.DEBUG)
@@ -24,9 +25,7 @@ class APIExtractor:
         self.endpoint = endpoint
         self.key = urllib.parse.quote(key) if key is not None else None
         self.name = name
-        # self.functions_list = ['to_tabular_flat_json', 'to_tabular_csv'] if functions_list is None else functions_list
         self.functions_list = []
-        # self.request will hold the requests.models.Response object if we need to create new to_tabular functions
         self.request = None
         self.raw_data = ''
         self.request_url = ''
@@ -50,10 +49,6 @@ class APIExtractor:
             module_functions = getmembers(eval(module), isfunction)
             for function_tuple in module_functions:
                 function_name, function = function_tuple
-                # Add this function as a module
-                # setattr(self, function_name, function)
-                #                 setattr(self, function_name, eval(f'{module}.{function_name}'))
-                # Add function_name to self.functions_list
                 self.functions_list.append(function)
 
     def create_request_url_api_key(self):
@@ -70,7 +65,10 @@ class APIExtractor:
         session.mount('https://', adapter)
         self.request = session.get(self.request_url)
         if self.request.status_code != 200:
-            raise Exception(self.request.text)
+            message = (f'Failed to get data from the API, using a retry strategy of up to {self.retry_strategy.total} '
+                       f'retries, backoff_factor of {self.retry_strategy.backoff_factor} and a status_forcelist set to'
+                       f'{self.retry_strategy.status_forcelist}. The returned text was: {self.request.text}')
+            raise Exception(message)
         self.raw_data = self.request.content.decode('utf-8')
 
     def to_tabular(self):

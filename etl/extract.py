@@ -2,7 +2,6 @@ import requests
 from urllib3.util import Retry
 from requests.adapters import HTTPAdapter
 import urllib.parse
-import csv
 import pkgutil
 from inspect import getmembers, isfunction
 from etl_exceptions import NotCorrectType

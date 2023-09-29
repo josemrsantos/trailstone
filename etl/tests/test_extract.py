@@ -1,6 +1,12 @@
 import extract
 import pytest
+import mock
+import requests
+from requests import Session
+from unittest.mock import patch
 
+class MockException(Exception):
+    pass
 
 def test_key_parsed_correctly_spaces_http():
     test_extractor = extract.APIExtractor(key=' 123 abc')
@@ -23,14 +29,30 @@ def test_create_correct_request_url():
     assert test_extractor.request_url == expected
 
 
-def test_get_data_xml_ok():
-    # TODO
-    pass
+@patch.object(Session, 'get', autospec=True)
+def test_get_data_xml_ok(mock_session):
+    mock_session.return_value.content = '1,2,3,4\n11,22,33,44'.encode('utf-8')
+    mock_session.return_value.status_code = 200
+    test_extractor = extract.APIExtractor(key='123')
+    test_extractor.url = 'http://test/'
+    test_extractor.endpoint = 'parameter/endpoint/file.ext'
+    test_extractor.get_data()
+    result = test_extractor.raw_data
+    expected = '1,2,3,4\n11,22,33,44'
+    assert result == expected
 
 
-def test_get_data_json_ok():
-    # TODO
-    pass
+@patch.object(Session, 'get', autospec=True)
+def test_get_data_json_ok(mock_session):
+    mock_session.return_value.content = '[{1:1, 2:2,3:3}, {1:11, 2:22,3:33}]'.encode('utf-8')
+    mock_session.return_value.status_code = 200
+    test_extractor = extract.APIExtractor(key='123')
+    test_extractor.url = 'http://test/'
+    test_extractor.endpoint = 'parameter/endpoint/file.ext'
+    test_extractor.get_data()
+    result = test_extractor.raw_data
+    expected = '[{1:1, 2:2,3:3}, {1:11, 2:22,3:33}]'
+    assert result == expected
 
 
 def test_get_data_1_fail_retry_ok():
@@ -38,9 +60,18 @@ def test_get_data_1_fail_retry_ok():
     pass
 
 
-def test_get_data_all_fails_throw_exception():
-    # TODO
-    pass
+@patch.object(Session, 'get', autospec=True)
+def test_get_data_all_fails_throw_exception(mock_session):
+    mock_session.return_value.content = 'Some random output'.encode('utf-8')
+    mock_session.return_value.text = 'Some random output'
+    mock_session.return_value.status_code = 429
+    test_extractor = extract.APIExtractor(key='123')
+    test_extractor.url = 'http://test/'
+    test_extractor.endpoint = 'parameter/endpoint/file.ext'
+    with pytest.raises(Exception):
+        test_extractor.get_data()
+
+
 
 
 def test_clean_header_spaces_uppercase_ok():
@@ -50,3 +81,10 @@ def test_clean_header_spaces_uppercase_ok():
     expected = ['leading', 'tailing', 'in_between', 'uppercase_and_spaces']
     assert test_extractor.header == expected
 
+
+def test_clean_header_spaces_uppercase_ok():
+    test_extractor = extract.APIExtractor()
+    test_extractor.header = [' leading', 'tailing ', 'in between', ' Uppercase AND spaces ']
+    test_extractor.clean_header()
+    expected = ['leading', 'tailing', 'in_between', 'uppercase_and_spaces']
+    assert test_extractor.header == expected

@@ -20,6 +20,9 @@ logger.addHandler(ch)
 
 
 class APIExtractor(ETL):
+    """
+    Class for doing the Extraction part
+    """
 
     def __init__(self, url=None, endpoint=None, key=None, name=None):
         self.url = url
@@ -43,6 +46,10 @@ class APIExtractor(ETL):
             self.clean_header()
 
     def load_all_to_tabular_functions(self):
+        """
+        Method that calls all functions inside the folder to_tabular_functions into self.functions_list
+        These functions should raise a NotCorrectType Exception, if they are not meant for that data structure
+        """
         self.functions_list = []
         all_modules = [name for _, name, _ in pkgutil.iter_modules(['to_tabular_functions'])]
         for module in all_modules:
@@ -73,6 +80,10 @@ class APIExtractor(ETL):
         self.raw_data = self.request.content.decode('utf-8')
 
     def to_tabular(self):
+        """
+        This method tries to convert data into tabular, by trying all functions in self.functions_list
+        If all functions raise NotCorrectType, this method will raise NotCorrectType with its own message
+        """
         for function in self.functions_list:
             try:
                 self.header, self.data = function(self.raw_data)
@@ -85,6 +96,9 @@ class APIExtractor(ETL):
         raise NotCorrectType(error_msg)
 
     def clean_header(self):
+        """
+        Simple cleaning of the column names
+        """
         new_header = []
         for column in self.header:
             # Remove trailing and leading spaces

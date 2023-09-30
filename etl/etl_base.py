@@ -11,6 +11,13 @@ logger.addHandler(ch)
 
 
 class ETL:
+    """
+    This is the base class all other classes will inherit from.
+    For future consideration: Maybe we could add more code here and have the __init__ method constructor being called
+    from children's classes.
+    A second consideration would be to move the exceptions defined on the etl_exceptions module, into this module to
+    keep things simpler (both approaches should be valid).
+    """
 
     def __init__(self):
         """

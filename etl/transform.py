@@ -21,7 +21,9 @@ class FunctionFound(Exception):
 
 
 class APITransformer(ETL):
-
+    """
+    Class for doing the Transform part
+    """
     def __init__(self, data=None, header=None, tz_columns=None, name=None):
         self.header = header
         self.functions_list = []
@@ -34,6 +36,11 @@ class APITransformer(ETL):
             self.transform_timestamps()
 
     def load_all_to_utc_timestamp_functions(self):
+        """
+        Like the method load_all_to_tabular_functions in the extract module.
+        Method that calls all functions inside the folder to_utc_functions into self.functions_list
+        These functions should raise a NotCorrectDateType Exception, if they are not meant for that data type
+        """
         self.functions_list = []
         all_modules = [name for _, name, _ in pkgutil.iter_modules(['to_utc_functions'])]
         for module in all_modules:
@@ -45,6 +52,10 @@ class APITransformer(ETL):
                 self.functions_list.append(function)
 
     def transform_timestamps(self):
+        """
+        Like the method to_tabular in the extract module.
+        Finds a function in self.functions_list that is able to convert that "date" into a "time zone aware UTC format"
+        """
         for row in self.data:
             for column in self.tz_columns:
                 try:

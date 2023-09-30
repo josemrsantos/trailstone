@@ -15,31 +15,14 @@ ch.setFormatter(formatter)
 logger.addHandler(ch)
 
 
-class API:
-
-    def __init__(self):
-        """
-        This constructor method should be re-defined by any subclass of API, but it should always define these 3
-        object variables/attributes
-        """
-        self.name = ''
-        self.header = []
-        self.data = []
-        pass
-
-    def dump(self):
-        """
-        A method that might help debug issues on development. Outputs the name, header and data of the object.
-        """
-        logger.info(f'--------------------------------------------------------------------')
-        logger.info(self.name)
-        logger.info(f'--------------------------------------------------------------------')
-        logger.info(f"{','.join(self.header)}")
-        for row in self.data:
-            logger.info(f"{','.join([str(i) for i in row])}")
-
-
 def get_days(days_back, today):
+    """
+    Function that computes the days that need to be processed, according to the input parameters.
+    By default, it will process 7 days up until Yesterday ()
+    :param days_back: How many days to fetch. Dy default is 7.
+    :param today: Optional definition of today. By default, today is actually today. Can be useful for back filling.
+    :return: A list with all the days to be processed
+    """
     if not today:  # By default today will be the empty string and should be set for today
         today = date.today()
     else:
@@ -55,6 +38,11 @@ def get_days(days_back, today):
 
 
 def main():
+    """
+    Execution logic should be here.
+    Gets all days that need to be processed.
+    Execute the Extract + Transform + Load for each day.
+    """
     logger.info('START of ETL')
     # Read from parameters how many days back
     parser = argparse.ArgumentParser(description='All parameters are optional. '
@@ -69,6 +57,11 @@ def main():
                         help='Input file name (or full path)',
                         default='',
                         type=str)
+    parser.add_argument('--key',
+                        required=False,
+                        help='Secret key of the API',
+                        default='',
+                        type=str)
 
     args = parser.parse_args()
     # Create a list with all days that we need to get backwards
@@ -80,11 +73,11 @@ def main():
         logger.info(f'Going to fetch data for the day {day}')
         wind_extractor = extract.APIExtractor(url='http://localhost:8000/',
                                               endpoint=f'{day}/renewables/windgen.csv',
-                                              key='ADU8S67Ddy!d7f?',
+                                              key=args.key,
                                               name=wind_name)
         solar_extractor = extract.APIExtractor(url='http://localhost:8000/',
                                                endpoint=f'{day}/renewables/solargen.json',
-                                               key='ADU8S67Ddy!d7f?',
+                                               key=args.key,
                                                name=solar_name)
         # Transform
         wind_transformed = transform.APITransformer(wind_extractor.data,

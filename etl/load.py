@@ -17,7 +17,11 @@ logger.addHandler(ch)
 
 
 class APILoader(ETL):
-
+    """
+    Class for doing the last stage: the Load. In this case it was decided to output the final data into Parquet files
+    since it is an optimal format to load the data into (partitioned) hive tables that can be queried using Athena,
+    and can be efficiently loaded into DataWarehouse Data Base engines such as Redshift or Snowflake.
+    """
     def __init__(self, data=None, header=None, name=None, path='./output', partition=None):
         self.data = data
         self.header = header
@@ -29,6 +33,12 @@ class APILoader(ETL):
             self.export_data()
 
     def create_full_path(self, file_name='data.parquet'):
+        """
+        Creates all the directories for the full path to data file. Returns the full path to the file (including the
+        file name).
+        :param file_name: The name of the file name. The default value is 'data.parquet'.
+        :return: The full path to the file
+        """
         if self.path is None or self.partition is None:
             raise CannotCreateFilePath('To create the file, the path and the partition need to be defined')
         # Make sure all directories exist
@@ -38,6 +48,10 @@ class APILoader(ETL):
         return full_path
 
     def export_data(self):
+        """
+        Exports the data in this object into a file, according to the defined path and partition(s)
+        :return:
+        """
         # For the sake of simplicity, create a "pandas" Data Frame
         df = pd.DataFrame(self.data, columns=self.header)
         # Create a PyArrow Table from the pandas Data Frame

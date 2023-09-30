@@ -4,3 +4,7 @@ class NotCorrectType(Exception):
 
 class NotCorrectDateType(Exception):
     pass
+
+
+class CannotCreateFilePath(Exception):
+    pass

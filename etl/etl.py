@@ -1,5 +1,6 @@
 import extract
 import transform
+import load
 from datetime import date, timedelta
 import argparse
 import logging
@@ -73,33 +74,38 @@ def main():
     # Create a list with all days that we need to get backwards
     all_days = get_days(days_back=args.days_back,today=args.today)
     for day in all_days:
+        wind_name = f'Wind - {day}'
+        solar_name = f'Solar - {day}'
         # Extract
         logger.info(f'Going to fetch data for the day {day}')
         wind_extractor = extract.APIExtractor(url='http://localhost:8000/',
                                               endpoint=f'{day}/renewables/windgen.csv',
                                               key='ADU8S67Ddy!d7f?',
-                                              name=f'Wind - {day}')
+                                              name=wind_name)
         solar_extractor = extract.APIExtractor(url='http://localhost:8000/',
                                                endpoint=f'{day}/renewables/solargen.json',
                                                key='ADU8S67Ddy!d7f?',
-                                              name=f'Solar - {day}')
+                                               name=solar_name)
         # Transform
         wind_transformed = transform.APITransformer(wind_extractor.data,
-                                                 wind_extractor.header,
-                                                 [0,3],
-                                              name=f'Wind - {day}')
+                                                    wind_extractor.header,
+                                                    tz_columns=[0,3],
+                                                    name=wind_name)
         solar_transformed = transform.APITransformer(solar_extractor.data,
-                                                  solar_extractor.header,
-                                                     [0, 3],
-                                                     name=f'Solar - {day}')
-
+                                                     solar_extractor.header,
+                                                     tz_columns=[0, 3],
+                                                     name=solar_name)
         # Load
-       #  load.output_parquet(wind_transformed.data, ['wind',str(day)])
-       #  load.output_parquet(solar_transformed.data)
-    # wind_extractor.dump()
-    # solar_extractor.dump()
-    wind_transformed.dump()
-    solar_transformed.dump()
+        load.APILoader( data=wind_transformed.data,
+                        header=wind_transformed.header,
+                        name=wind_name,
+                        path='./output/wind',
+                        partition=day)
+        load.APILoader(data=solar_transformed.data,
+                       header=solar_transformed.header,
+                       name=solar_name,
+                       path='./output/solar',
+                       partition=day)
     logger.info('END of ETL')
 
 

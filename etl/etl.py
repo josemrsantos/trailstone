@@ -27,7 +27,7 @@ def get_days(days_back, today):
         today = date.today()
     else:
         year, month, day = today.split('-')
-        today = date(year, month, day)
+        today = date(int(year), int(month), int(day))
     all_days = []
     for i in range(days_back, 0, -1):
         day = today - timedelta(days=i)
